@@ -118,11 +118,13 @@ class Article(BaseModel):
         verbose_name_plural = verbose_name
         get_latest_by = 'id'
         indexes = [
-            # 优化列表查询：type + status + pub_time组合索引
-            models.Index(fields=['type', 'status', '-pub_time'], name='idx_type_status_pub'),
+            # 优化首页列表查询：匹配status='p' AND type='a' ORDER BY pub_time DESC
+            models.Index(fields=['status', 'type', '-pub_time'], name='idx_status_type_pub'),
             # 优化热门文章查询：status + views组合索引
             models.Index(fields=['status', '-views'], name='idx_status_views'),
-            # 优化作者文章查询：author + status + type组合索引
+            # 优化作者文章查询：匹配author=? ORDER BY pub_time DESC
+            models.Index(fields=['author', '-pub_time'], name='idx_author_pubtime'),
+            # 优化作者文章筛选查询：author + status + type组合索引
             models.Index(fields=['author', 'status', 'type'], name='idx_author_status_type'),
             # 优化分类查询：category + status组合索引
             models.Index(fields=['category', 'status'], name='idx_category_status'),

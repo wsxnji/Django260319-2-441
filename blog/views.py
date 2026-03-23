@@ -95,6 +95,16 @@ class ArticleDetailView(DetailView):
     pk_url_kwarg = 'article_id'
     context_object_name = "article"
 
+    def get_object(self, queryset=None):
+        # 优化：使用select_related和prefetch_related避免N+1查询
+        if queryset is None:
+            queryset = Article.objects.select_related(
+                'author', 'category'
+            ).prefetch_related(
+                'tags'
+            )
+        return super().get_object(queryset)
+
     def get_context_data(self, **kwargs):
         comment_form = CommentForm()
 

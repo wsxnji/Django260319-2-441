@@ -37,6 +37,10 @@ class Comment(models.Model):
         indexes = [
             # 优化评论列表查询：article + parent_comment + is_enable组合索引
             models.Index(fields=['article', 'parent_comment', 'is_enable'], name='idx_art_parent_enable'),
+            # 优化按文章查询评论：article + is_enable + creation_time（按时间倒序）
+            models.Index(fields=['article', 'is_enable', '-creation_time'], name='idx_art_enable_time'),
+            # 优化作者评论查询：author + creation_time（按时间倒序）
+            models.Index(fields=['author', '-creation_time'], name='idx_author_time'),
             # 优化侧边栏评论查询：is_enable + id组合索引
             models.Index(fields=['is_enable', '-id'], name='idx_enable_id'),
         ]
