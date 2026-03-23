@@ -26,11 +26,13 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
                     </svg>
                     <span class="leave-reply">
-                    {% if article.comment_set and article.comment_set.count %}
-                        {{ article.comment_set.count }} {% trans 'comments' %}
-                    {% else %}
-                        {% trans 'comment' %}
-                    {% endif %}
+                    {% with comment_count=article.get_comment_count %}
+                        {% if comment_count > 0 %}
+                            {{ comment_count }} {% trans 'comments' %}
+                        {% else %}
+                            {% trans 'comment' %}
+                        {% endif %}
+                    {% endwith %}
                     </span>
                 </a>
             {% endif %}
