@@ -126,6 +126,8 @@ class Article(BaseModel):
             models.Index(fields=['author', 'status', 'type'], name='idx_author_status_type'),
             # 优化分类查询：category + status组合索引
             models.Index(fields=['category', 'status'], name='idx_category_status'),
+            # 优化作者文章按发布时间倒序查询：author + pub_time组合索引
+            models.Index(fields=['author', '-pub_time'], name='idx_author_pubtime'),
         ]
 
     def get_absolute_url(self):

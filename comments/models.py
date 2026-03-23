@@ -39,6 +39,12 @@ class Comment(models.Model):
             models.Index(fields=['article', 'parent_comment', 'is_enable'], name='idx_art_parent_enable'),
             # 优化侧边栏评论查询：is_enable + id组合索引
             models.Index(fields=['is_enable', '-id'], name='idx_enable_id'),
+            # 优化文章评论列表查询（comment_list方法）：article + is_enable + id组合索引
+            models.Index(fields=['article', 'is_enable', '-id'], name='idx_art_enable_id'),
+            # 优化子评论查询：parent_comment索引
+            models.Index(fields=['parent_comment'], name='idx_parent_comment'),
+            # 优化用户评论查询：author + id组合索引
+            models.Index(fields=['author', '-id'], name='idx_author_id'),
         ]
 
     def __str__(self):

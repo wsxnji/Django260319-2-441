@@ -95,6 +95,15 @@ class ArticleDetailView(DetailView):
     pk_url_kwarg = 'article_id'
     context_object_name = "article"
 
+    def get_queryset(self):
+        # 优化：预加载关联对象，避免 N+1 查询
+        return Article.objects.select_related(
+            'author',
+            'category'
+        ).prefetch_related(
+            'tags'
+        )
+
     def get_context_data(self, **kwargs):
         comment_form = CommentForm()
 
@@ -158,6 +167,7 @@ class ArticleDetailView(DetailView):
         description = Truncator(description).chars(150, truncate='...')
         
         # 处理keywords：去除空格，用逗号分隔
+        # 使用 prefetch_related 预加载的 tags，避免 N+1 查询
         tags = [tag.name.strip() for tag in article.tags.all()]
         keywords = ", ".join(tags) if tags else blog_setting.site_keywords
         
