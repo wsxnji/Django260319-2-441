@@ -35,10 +35,18 @@ class Comment(models.Model):
         verbose_name_plural = verbose_name
         get_latest_by = 'id'
         indexes = [
-            # 优化评论列表查询：article + parent_comment + is_enable组合索引
+            # 优化评论列表查询：article + parent_comment + is_enable 组合索引
             models.Index(fields=['article', 'parent_comment', 'is_enable'], name='idx_art_parent_enable'),
-            # 优化侧边栏评论查询：is_enable + id组合索引
+            # 优化侧边栏评论查询：is_enable + id 组合索引
             models.Index(fields=['is_enable', '-id'], name='idx_enable_id'),
+            # 优化：按创建时间倒序查询评论（最新评论）
+            models.Index(fields=['-creation_time'], name='idx_creation_time_desc'),
+            # 优化：文章评论按创建时间查询
+            models.Index(fields=['article', '-creation_time'], name='idx_article_creation_time'),
+            # 优化：作者评论查询
+            models.Index(fields=['author', '-creation_time'], name='idx_author_creation_time'),
+            # 优化：启用的评论按创建时间排序
+            models.Index(fields=['is_enable', '-creation_time'], name='idx_enable_creation_time'),
         ]
 
     def __str__(self):
@@ -130,7 +138,12 @@ class CommentReaction(models.Model):
         # 每个用户对同一评论的同一种 emoji 只能点一次
         unique_together = ['comment', 'user', 'reaction_type']
         indexes = [
+            # 基础查询：按评论和反应类型
             models.Index(fields=['comment', 'reaction_type'], name='idx_comment_reaction'),
+            # 优化：按评论、反应类型和用户查询（检查是否已反应）
+            models.Index(fields=['comment', 'user', 'reaction_type'], name='idx_comment_user_reaction'),
+            # 优化：按用户查询所有反应
+            models.Index(fields=['user', '-created_at'], name='idx_user_reaction_time'),
         ]
 
     def __str__(self):
