@@ -35,10 +35,16 @@ class Comment(models.Model):
         verbose_name_plural = verbose_name
         get_latest_by = 'id'
         indexes = [
-            # 优化评论列表查询：article + parent_comment + is_enable组合索引
-            models.Index(fields=['article', 'parent_comment', 'is_enable'], name='idx_art_parent_enable'),
-            # 优化侧边栏评论查询：is_enable + id组合索引
+            # 优化文章评论列表查询：article + is_enable + id(倒序) 复合索引
+            # 覆盖查询：filter(article=xx, is_enable=True).order_by('-id')
+            models.Index(fields=['article', 'is_enable', '-id'], name='idx_article_enable_id'),
+            # 优化父评论查询：parent_comment + is_enable + id(倒序) 复合索引
+            # 覆盖查询：filter(parent_comment=None, is_enable=True).order_by('-id')
+            models.Index(fields=['parent_comment', 'is_enable', '-id'], name='idx_parent_enable_id'),
+            # 优化侧边栏最新评论查询：is_enable + id(倒序) 复合索引
             models.Index(fields=['is_enable', '-id'], name='idx_enable_id'),
+            # 优化用户评论查询：author + id(倒序) 复合索引
+            models.Index(fields=['author', '-id'], name='idx_author_id'),
         ]
 
     def __str__(self):
