@@ -118,14 +118,10 @@ class Article(BaseModel):
         verbose_name_plural = verbose_name
         get_latest_by = 'id'
         indexes = [
-            # 优化列表查询：type + status + pub_time组合索引
             models.Index(fields=['type', 'status', '-pub_time'], name='idx_type_status_pub'),
-            # 优化热门文章查询：status + views组合索引
             models.Index(fields=['status', '-views'], name='idx_status_views'),
-            # 优化作者文章查询：author + status + type组合索引
-            models.Index(fields=['author', 'status', 'type'], name='idx_author_status_type'),
-            # 优化分类查询：category + status组合索引
-            models.Index(fields=['category', 'status'], name='idx_category_status'),
+            models.Index(fields=['author', 'status', 'type', '-pub_time'], name='idx_author_status_type_pub'),
+            models.Index(fields=['category', 'status', '-pub_time'], name='idx_category_status_pub'),
         ]
 
     def get_absolute_url(self):
@@ -157,7 +153,7 @@ class Article(BaseModel):
             logger.info(f'Cache HIT: article comments (id={self.id})')
             return value
         else:
-            comments = self.comment_set.filter(is_enable=True).order_by('-id')
+            comments = self.comment_set.filter(is_enable=True).select_related('author').order_by('-id')
             cache.set(cache_key, comments, CacheTimeout.HOUR_10)
             logger.info(f'Cache MISS: article comments (id={self.id})')
             return comments
