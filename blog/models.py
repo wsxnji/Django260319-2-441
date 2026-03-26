@@ -118,14 +118,18 @@ class Article(BaseModel):
         verbose_name_plural = verbose_name
         get_latest_by = 'id'
         indexes = [
-            # 优化列表查询：type + status + pub_time组合索引
-            models.Index(fields=['type', 'status', '-pub_time'], name='idx_type_status_pub'),
-            # 优化热门文章查询：status + views组合索引
+            # 优化首页文章列表查询：status + type + pub_time(倒序) 复合索引
+            # 覆盖查询：filter(status='p', type='a').order_by('-pub_time')
+            models.Index(fields=['status', 'type', '-pub_time'], name='idx_status_type_pub'),
+            # 优化作者文章列表查询：author + pub_time(倒序) 复合索引
+            # 覆盖查询：filter(author=xx).order_by('-pub_time')
+            models.Index(fields=['author', '-pub_time'], name='idx_author_pub'),
+            # 优化热门文章查询：status + views(倒序) 复合索引
             models.Index(fields=['status', '-views'], name='idx_status_views'),
-            # 优化作者文章查询：author + status + type组合索引
-            models.Index(fields=['author', 'status', 'type'], name='idx_author_status_type'),
-            # 优化分类查询：category + status组合索引
-            models.Index(fields=['category', 'status'], name='idx_category_status'),
+            # 优化分类查询：category + status + pub_time(倒序) 复合索引
+            models.Index(fields=['category', 'status', '-pub_time'], name='idx_category_status_pub'),
+            # 优化标签文章查询：通过中间表查询时使用
+            models.Index(fields=['status', '-pub_time'], name='idx_status_pub'),
         ]
 
     def get_absolute_url(self):
